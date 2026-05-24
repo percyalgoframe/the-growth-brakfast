@@ -28,5 +28,14 @@ service cloud.firestore {
       // No deletions from clients (merge-only).
       allow delete: if false;
     }
+
+    match /checkins/{id} {
+      // Attendance log. Admins read; any signed-in (anonymous) attendee may record a
+      // visit. Restricted field set; no client deletes.
+      allow read: if isAdmin();
+      allow create, update: if request.auth != null
+        && request.resource.data.keys().hasOnly(['phone','name','date','lastAt','count']);
+      allow delete: if false;
+    }
   }
 }

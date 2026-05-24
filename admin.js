@@ -3,7 +3,7 @@ import {
   getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged,
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
-  getFirestore, doc, setDoc, serverTimestamp,
+  getFirestore, doc, setDoc, serverTimestamp, collection, query, where, getDocs,
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
 
@@ -34,6 +34,9 @@ function wireEvents() {
   $("denied-signout").addEventListener("click", doSignOut);
   $("file-input").addEventListener("change", onFile);
   $("upload-btn").addEventListener("click", onUpload);
+  $("tab-checkins").addEventListener("click", () => switchTab("checkins"));
+  $("tab-upload").addEventListener("click", () => switchTab("upload"));
+  $("checkin-date").addEventListener("change", () => loadCheckins($("checkin-date").value || todayStr()));
 }
 
 async function onAuthChange(user) {
@@ -80,12 +83,94 @@ async function onCreate() {
 async function checkAdmin(user) {
   const r = await user.getIdTokenResult(true); // force refresh to pick up a newly-granted claim
   if (r.claims && r.claims.admin === true) {
-    showView("view-admin");
+    showAdmin();
   } else {
     $("denied-phone").textContent = user.email || "";
     showView("view-denied");
   }
 }
+
+/* ---------- admin home: check-ins ---------- */
+
+let adminReady = false;
+function showAdmin() {
+  showView("view-admin");
+  if (adminReady) return;
+  adminReady = true;
+  const today = todayStr();
+  $("checkin-date").value = today;
+  $("checkin-date").max = today;
+  switchTab("checkins");
+  loadCheckins(today);
+}
+
+function switchTab(which) {
+  const ci = which === "checkins";
+  $("tab-checkins").classList.toggle("active", ci);
+  $("tab-upload").classList.toggle("active", !ci);
+  $("panel-checkins").classList.toggle("hidden", !ci);
+  $("panel-upload").classList.toggle("hidden", ci);
+}
+
+async function loadCheckins(date) {
+  const listEl = $("checkin-list");
+  listEl.textContent = "";
+  $("checkin-empty").classList.add("hidden");
+  $("checkin-count").textContent = "…";
+  try {
+    const snap = await getDocs(query(collection(db, "checkins"), where("date", "==", date)));
+    const rows = snap.docs.map((d) => d.data());
+    rows.sort((a, b) => msOf(b.lastAt) - msOf(a.lastAt));
+    const today = date === todayStr();
+    $("checkin-count").innerHTML = `${rows.length}<small>checked in${today ? " today" : ""}</small>`;
+    if (!rows.length) { $("checkin-empty").classList.remove("hidden"); return; }
+    const frag = document.createDocumentFragment();
+    for (const r of rows) frag.appendChild(checkinRow(r));
+    listEl.appendChild(frag);
+  } catch (err) {
+    console.error("checkins:", err);
+    $("checkin-count").textContent = "—";
+    $("checkin-empty").textContent = "Couldn't load check-ins.";
+    $("checkin-empty").classList.remove("hidden");
+  }
+}
+
+function checkinRow(r) {
+  const row = document.createElement("div");
+  row.className = "checkin-row";
+  const av = document.createElement("div");
+  av.className = "checkin-av";
+  av.textContent = initials(r.name);
+  av.style.background = colorOf(r.name || r.phone || "?");
+  const name = document.createElement("div");
+  name.className = "checkin-name";
+  name.textContent = r.name || r.phone || "—";
+  if (r.count > 1) {
+    const b = document.createElement("span");
+    b.className = "checkin-badge";
+    b.textContent = "×" + r.count;
+    name.appendChild(b);
+  }
+  const time = document.createElement("div");
+  time.className = "checkin-time";
+  time.textContent = r.lastAt && r.lastAt.toDate
+    ? r.lastAt.toDate().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    : "";
+  row.append(av, name, time);
+  return row;
+}
+
+function todayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+function msOf(ts) { return ts && ts.toMillis ? ts.toMillis() : 0; }
+function initials(name) {
+  const p = (name || "").trim().split(/\s+/).filter(Boolean);
+  if (!p.length) return "?";
+  return ((p[0][0] || "") + (p.length > 1 ? p[p.length - 1][0] : "")).toUpperCase();
+}
+function colorOf(s) { let h = 0; for (const c of s) h = (h * 31 + c.charCodeAt(0)) >>> 0; return `hsl(${h % 360} 38% 52%)`; }
 
 async function doSignOut() {
   parsedRecords = [];

@@ -3,7 +3,7 @@ import {
   getAuth, signInAnonymously, onAuthStateChanged,
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
-  getFirestore, collection, query, where, getDocs, setDoc, doc, onSnapshot, serverTimestamp,
+  getFirestore, collection, query, where, getDocs, setDoc, doc, onSnapshot, serverTimestamp, increment,
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
 
@@ -15,7 +15,7 @@ const setLoading = (on) => $("loading").classList.toggle("hidden", !on);
 const CONFIGURED =
   firebaseConfig && firebaseConfig.apiKey && !String(firebaseConfig.apiKey).includes("REPLACE");
 
-let db, authReady, enteredPhone = "", unsub = null, allAttendees = [];
+let db, authReady, enteredPhone = "", enteredName = "", unsub = null, allAttendees = [];
 
 if (!CONFIGURED) {
   $("config-banner").classList.remove("hidden");
@@ -42,7 +42,7 @@ async function restoreSession() {
   try {
     await authReady;
     const snap = await getDocs(query(collection(db, "attendees"), where("phone", "==", saved)));
-    if (!snap.empty) openDirectory();
+    if (!snap.empty) { enteredName = snap.docs[0].data().name || ""; openDirectory(); }
     else { try { localStorage.removeItem("gb_phone"); } catch (_) {} }
   } catch (err) { console.error(err); }
   finally { setLoading(false); }
@@ -82,6 +82,7 @@ async function onLookup(e) {
     await authReady;
     const snap = await getDocs(query(collection(db, "attendees"), where("phone", "==", e164)));
     if (!snap.empty) {
+      enteredName = snap.docs[0].data().name || "";
       try { localStorage.setItem("gb_phone", e164); } catch (_) {}
       openDirectory();
     } else {
@@ -101,6 +102,7 @@ async function onSubmitRequest(e) {
   const email = $("r-email").value.trim();
   if (!name || !email) { $("request-error").textContent = "Name and email are required."; return; }
   if (!enteredPhone) { showView("view-phone"); return; }
+  enteredName = name;
   const id = enteredPhone.replace(/\D/g, "");
   setLoading(true);
   try {
@@ -138,8 +140,21 @@ function renderSkeletons(n = 6) {
   }
 }
 
+// Records a "check-in" (attendance) for the day the attendee opened the directory.
+// Idempotent per person per day; bumps a count + lastAt. Best-effort, never blocks.
+function recordCheckin(phone, name) {
+  if (!db || !phone) return;
+  const digits = phone.replace(/\D/g, "");
+  const d = new Date();
+  const date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  setDoc(doc(db, "checkins", `${digits}_${date}`), {
+    phone, name: name || "", date, lastAt: serverTimestamp(), count: increment(1),
+  }, { merge: true }).catch((e) => console.error("checkin:", e));
+}
+
 function openDirectory() {
   showView("view-directory");
+  recordCheckin(enteredPhone, enteredName);
   if (unsub) return;
   renderSkeletons();
   unsub = onSnapshot(
@@ -175,7 +190,10 @@ function renderCards() {
     if (dterm && (p.phone || "").replace(/\D/g, "").includes(dterm)) return true;
     return false;
   });
-  $("count").textContent = `${list.length} ${list.length === 1 ? "person" : "people"}`;
+  const total = allAttendees.length;
+  $("count").textContent = term
+    ? `${list.length} of ${total}`
+    : `${total} ${total === 1 ? "person" : "people"} in the room`;
   $("dir-empty").classList.toggle("hidden", list.length > 0);
   const wrap = $("cards");
   wrap.textContent = "";

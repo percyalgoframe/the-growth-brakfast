@@ -6,7 +6,10 @@
   <meta name="robots" content="noindex" />
   <title>The Growth Breakfast — Admin</title>
   <link rel="preconnect" href="https://www.gstatic.com" />
-  <link rel="stylesheet" href="styles.css?v=4" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" />
+  <link rel="stylesheet" href="styles.css?v=6" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
@@ -49,24 +52,43 @@
       <button id="denied-signout" class="btn" type="button">Sign out</button>
     </section>
 
-    <!-- Admin upload -->
-    <section id="view-admin" class="view card-panel hidden" style="max-width:640px">
-      <h2>Upload guest list</h2>
-      <p class="muted">Choose the latest <strong>.csv</strong> or <strong>.xlsx</strong>. Rows are matched by phone number and <strong>merged</strong> &mdash; existing people are updated, new people added, no one is deleted.</p>
-      <input id="file-input" type="file" accept=".csv,.xlsx,.xls" />
-      <div id="parse-summary" class="banner hidden" style="background:#eef7f1;border-color:#bfe3cf;color:#1f6b48"></div>
-      <div id="preview-wrap" class="hidden">
-        <table id="preview" class="preview-table"></table>
+    <!-- Admin home: check-ins + upload -->
+    <section id="view-admin" class="view card-panel hidden" style="max-width:680px">
+      <div class="tabs" role="tablist">
+        <button id="tab-checkins" class="tab active" type="button">Check-ins</button>
+        <button id="tab-upload" class="tab" type="button">Guest list</button>
       </div>
-      <button id="upload-btn" class="btn primary hidden" type="button">Merge into directory</button>
-      <p id="admin-error" class="error" role="alert"></p>
-      <p id="admin-result" class="muted" style="margin-top:10px"></p>
-      <p style="margin-top:16px"><a href="index.html">&larr; View directory</a></p>
+
+      <div id="panel-checkins">
+        <div class="checkin-head">
+          <span id="checkin-count" class="checkin-count"></span>
+          <label style="display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);font-weight:600">Day
+            <input id="checkin-date" class="checkin-date" type="date" />
+          </label>
+        </div>
+        <div id="checkin-list" class="checkin-list"></div>
+        <p id="checkin-empty" class="muted hidden" style="margin-top:14px">No check-ins for this day yet.</p>
+      </div>
+
+      <div id="panel-upload" class="hidden">
+        <h2 style="font-size:22px;margin-bottom:6px">Upload guest list</h2>
+        <p class="muted">Choose the latest <strong>.csv</strong> or <strong>.xlsx</strong>. Rows are matched by phone and <strong>merged</strong> &mdash; existing people updated, new added, nobody removed.</p>
+        <input id="file-input" type="file" accept=".csv,.xlsx,.xls" />
+        <div id="parse-summary" class="banner hidden" style="background:#eef7f1;border-color:#bfe3cf;color:#1f6b48"></div>
+        <div id="preview-wrap" class="hidden">
+          <table id="preview" class="preview-table"></table>
+        </div>
+        <button id="upload-btn" class="btn primary hidden" type="button">Merge into directory</button>
+        <p id="admin-error" class="error" role="alert"></p>
+        <p id="admin-result" class="muted" style="margin-top:10px"></p>
+      </div>
+
+      <p style="margin-top:18px"><a href="index.html">&larr; View directory</a></p>
     </section>
 
     <div id="loading" class="loading hidden" aria-hidden="true"><span class="spinner"></span></div>
   </main>
 
-  <script type="module" src="admin.js?v=4"></script>
+  <script type="module" src="admin.js?v=5"></script>
 </body>
 </html>
