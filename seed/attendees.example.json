@@ -1,0 +1,18 @@
+[
+  {
+    "name": "Ada Lovelace",
+    "email": "ada@example.com",
+    "phone": "+919999900001",
+    "company": "Analytical Engines",
+    "title": "Founder",
+    "linkedin": "https://linkedin.com/in/example-ada"
+  },
+  {
+    "name": "Alan Turing",
+    "email": "alan@example.com",
+    "phone": "+919999900002",
+    "company": "Bletchley Labs",
+    "title": "Head of Research",
+    "linkedin": "https://linkedin.com/in/example-alan"
+  }
+]

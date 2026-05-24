@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Growth Breakfast — Attendees</title>
+  <meta name="description" content="The Growth Breakfast event attendee directory." />
+  <link rel="preconnect" href="https://www.gstatic.com" />
+  <link rel="preconnect" href="https://unavatar.io" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">&#9749;</span>
+      <div>
+        <h1>The Growth Breakfast</h1>
+        <p class="tagline">Attendee directory</p>
+      </div>
+    </div>
+    <div id="session-info" class="session-info hidden">
+      <span id="session-phone" class="session-phone"></span>
+      <button id="sign-out" class="link-btn" type="button">Sign out</button>
+    </div>
+  </header>
+
+  <main class="app-main">
+    <div id="config-banner" class="banner hidden">
+      Firebase isn&rsquo;t configured yet. Add your project keys to <code>firebase-config.js</code>.
+    </div>
+
+    <!-- View 1: phone -->
+    <section id="view-phone" class="view card-panel">
+      <h2>Verify your number</h2>
+      <p class="muted">Enter the mobile number you registered with. We&rsquo;ll text you a one-time code.</p>
+      <form id="phone-form" class="stack" novalidate>
+        <div class="phone-row">
+          <select id="country-code" aria-label="Country code">
+            <option value="+91" selected>&#127470;&#127475; +91</option>
+            <option value="+1">&#127482;&#127480; +1</option>
+            <option value="+44">&#127468;&#127463; +44</option>
+            <option value="+971">&#127462;&#127466; +971</option>
+            <option value="+61">&#127462;&#127482; +61</option>
+            <option value="+65">&#127480;&#127468; +65</option>
+          </select>
+          <input id="phone-input" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="98765 43210" required />
+        </div>
+        <button id="send-otp-btn" type="submit" class="btn primary">Send code</button>
+        <p id="phone-error" class="error" role="alert"></p>
+      </form>
+    </section>
+
+    <!-- View 2: OTP -->
+    <section id="view-otp" class="view card-panel hidden">
+      <h2>Enter the code</h2>
+      <p class="muted">Sent to <strong id="otp-target"></strong>.
+        <button type="button" id="change-number" class="link-btn">Change</button>
+      </p>
+      <form id="otp-form" class="stack" novalidate>
+        <input id="otp-input" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="6-digit code" required />
+        <button id="verify-otp-btn" type="submit" class="btn primary">Verify</button>
+        <p id="otp-error" class="error" role="alert"></p>
+      </form>
+    </section>
+
+    <!-- View 3: directory -->
+    <section id="view-directory" class="view hidden">
+      <div class="dir-head">
+        <h2>Who&rsquo;s here</h2>
+        <div class="dir-tools">
+          <input id="search" type="search" placeholder="Search name, company, title&hellip;" aria-label="Search attendees" />
+          <span id="count" class="count-pill"></span>
+        </div>
+      </div>
+      <div id="cards" class="cards"></div>
+      <p id="dir-empty" class="muted hidden">No attendees yet.</p>
+    </section>
+
+    <!-- View 4: request to be added -->
+    <section id="view-request" class="view card-panel hidden">
+      <h2>You&rsquo;re not on the list yet</h2>
+      <p class="muted">Your number is verified. Add your details to join the directory &mdash; you&rsquo;ll appear instantly for everyone.</p>
+      <form id="request-form" class="stack" novalidate>
+        <label>Full name<input id="r-name" type="text" autocomplete="name" required /></label>
+        <label>Email<input id="r-email" type="email" autocomplete="email" required /></label>
+        <label>Company<input id="r-company" type="text" autocomplete="organization" /></label>
+        <label>Job title<input id="r-title" type="text" autocomplete="organization-title" /></label>
+        <label>LinkedIn URL<input id="r-linkedin" type="url" placeholder="https://linkedin.com/in/yourhandle" /></label>
+        <label>Photo URL <span class="hint">(optional)</span><input id="r-photo" type="url" placeholder="https://&hellip;/photo.jpg" /></label>
+        <label class="locked">Mobile <span class="hint">(verified)</span><input id="r-phone" type="tel" disabled /></label>
+        <button id="submit-request" type="submit" class="btn primary">Join the directory</button>
+        <p id="request-error" class="error" role="alert"></p>
+      </form>
+    </section>
+
+    <div id="loading" class="loading hidden" aria-hidden="true"><span class="spinner"></span></div>
+  </main>
+
+  <footer class="app-footer">
+    <a href="qr.html">Event QR code</a>
+  </footer>
+
+  <div id="recaptcha-container"></div>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

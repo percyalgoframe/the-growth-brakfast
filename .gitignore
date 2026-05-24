@@ -1,0 +1,15 @@
+# Secrets / PII — never commit
+seed/serviceAccountKey.json
+seed/attendees.json
+
+# Local tooling
+.claude/
+
+# Dependencies
+node_modules/
+**/node_modules/
+
+# OS / logs
+.DS_Store
+*.log
+npm-debug.log*

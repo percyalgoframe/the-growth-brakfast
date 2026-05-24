@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Growth Breakfast — QR Code</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+  <main class="qr-page">
+    <h1>Scan to join</h1>
+    <p class="muted">The Growth Breakfast &mdash; attendee directory</p>
+    <div id="qr"></div>
+    <p class="qr-url" id="qr-url"></p>
+    <div class="stack">
+      <label>Site URL<input id="url-input" type="url" /></label>
+      <div class="row">
+        <button id="regen" class="btn" type="button">Update QR</button>
+        <button id="download" class="btn primary" type="button">Download PNG</button>
+      </div>
+    </div>
+    <p style="margin-top:18px"><a href="index.html">&larr; Back to directory</a></p>
+  </main>
+
+  <script>
+    var DEFAULT_URL = "https://percyalgoframe.github.io/the-growth-brakfast/";
+    var urlInput = document.getElementById("url-input");
+    urlInput.value = DEFAULT_URL;
+
+    function render() {
+      var box = document.getElementById("qr");
+      box.innerHTML = "";
+      var value = urlInput.value || DEFAULT_URL;
+      new QRCode(box, { text: value, width: 280, height: 280, correctLevel: QRCode.CorrectLevel.M });
+      document.getElementById("qr-url").textContent = value;
+    }
+
+    document.getElementById("regen").addEventListener("click", render);
+    document.getElementById("download").addEventListener("click", function () {
+      var canvas = document.querySelector("#qr canvas");
+      var img = document.querySelector("#qr img");
+      var dataURL = canvas ? canvas.toDataURL("image/png") : (img ? img.src : null);
+      if (!dataURL) return;
+      var a = document.createElement("a");
+      a.href = dataURL;
+      a.download = "growth-breakfast-qr.png";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    });
+
+    render();
+  </script>
+</body>
+</html>

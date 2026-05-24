@@ -1,0 +1,16 @@
+{
+  "name": "growth-breakfast-seed",
+  "version": "1.0.0",
+  "private": true,
+  "description": "One-time Firestore seeder for The Growth Breakfast attendee directory.",
+  "type": "commonjs",
+  "scripts": {
+    "seed": "node seed.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.1.0"
+  }
+}

@@ -1,0 +1,20 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /attendees/{id} {
+
+      // Anyone who has completed SMS OTP can read the directory.
+      allow read: if request.auth != null;
+
+      // A signed-in user may add ONLY their own verified number, and only the
+      // expected fields (prevents inserting fake entries or spoofing others).
+      allow create: if request.auth != null
+        && request.resource.data.phone == request.auth.token.phone_number
+        && request.resource.data.keys().hasOnly(
+             ['name','email','phone','company','title','linkedin','photoURL','source','createdAt']);
+
+      // Edits/removals are admin-only (Firebase console / Admin SDK).
+      allow update, delete: if false;
+    }
+  }
+}
