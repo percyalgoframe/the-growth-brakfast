@@ -4,10 +4,10 @@
 // Fill these in from: Firebase console → Project settings → General →
 // "Your apps" → Web app → SDK setup and configuration → Config.
 export const firebaseConfig = {
-  apiKey: "REPLACE_ME",
-  authDomain: "REPLACE_ME.firebaseapp.com",
-  projectId: "REPLACE_ME",
-  storageBucket: "REPLACE_ME.appspot.com",
-  messagingSenderId: "REPLACE_ME",
-  appId: "REPLACE_ME",
+  apiKey: "AIzaSyAylk2P3hiaYUZt8HIftJ6nMtrFsLhjoJY",
+  authDomain: "growth-breakfast.firebaseapp.com",
+  projectId: "growth-breakfast",
+  storageBucket: "growth-breakfast.firebasestorage.app",
+  messagingSenderId: "391819311483",
+  appId: "1:391819311483:web:714d813793d6e3b61ca5de",
 };
