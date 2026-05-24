@@ -298,36 +298,19 @@ function saveContact(p) {
 }
 
 function setAvatar(container, p) {
-  // Show initials immediately so a card is never blank, then upgrade to a real
-  // photo only if one actually loads (external services may hang, not error).
+  // Clean colored initials by default; swap in the photo only if it actually loads.
+  // We do NOT call a live avatar service at runtime — it returned LinkedIn's gray
+  // "ghost" placeholder (a valid 200) for people with no photo, which looked broken.
+  // Real photos are pre-resolved and cached on the doc (photoURL); everyone else
+  // gets a deterministic initials avatar.
   container.textContent = initialsOf(p.name);
   container.style.background = colorOf(p.name || p.email || "?");
-  const candidates = [];
-  if (p.photoURL) candidates.push(p.photoURL);
-  const handle = linkedinHandle(p.linkedin);
-  if (handle) candidates.push(`https://unavatar.io/linkedin/${encodeURIComponent(handle)}?fallback=false`);
-  if (p.email && /\S+@\S+\.\S+/.test(p.email)) candidates.push(`https://unavatar.io/${encodeURIComponent(p.email)}?fallback=false`);
-  if (!candidates.length) return;
-  let i = 0;
-  const tryNext = () => {
-    if (i >= candidates.length) return; // keep initials
-    const url = candidates[i++];
-    const img = new Image();
-    img.alt = p.name || ""; img.referrerPolicy = "no-referrer";
-    img.onload = () => { container.textContent = ""; container.style.background = ""; container.appendChild(img); };
-    img.onerror = tryNext;
-    img.src = url;
-  };
-  // Lazy: only request when the card nears the viewport, so we don't fire all
-  // avatar requests at once (the service rate-limits bursts → 429 → no photo).
-  if ("IntersectionObserver" in window) {
-    const io = new IntersectionObserver((entries, obs) => {
-      if (entries.some((e) => e.isIntersecting)) { obs.disconnect(); tryNext(); }
-    }, { rootMargin: "300px" });
-    io.observe(container);
-  } else {
-    tryNext();
-  }
+  if (!p.photoURL) return;
+  const img = new Image();
+  img.alt = p.name || "";
+  img.referrerPolicy = "no-referrer";
+  img.onload = () => { container.textContent = ""; container.style.background = ""; container.appendChild(img); };
+  img.src = p.photoURL;
 }
 
 function initialsOf(name) {
