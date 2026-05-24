@@ -211,11 +211,15 @@ async function onUpload() {
   for (const rec of parsedRecords) {
     const id = rec.phone.replace(/\D/g, "");
     try {
-      await setDoc(doc(db, "attendees", id), {
+      const data = {
         name: rec.name, email: rec.email, phone: rec.phone,
         company: rec.company, title: rec.title, linkedin: rec.linkedin,
-        photoURL: rec.photoURL || "", source: "import", createdAt: serverTimestamp(),
-      }, { merge: true });
+        source: "import", createdAt: serverTimestamp(),
+      };
+      // Only set photoURL when the upload actually provides one, so a merge never
+      // wipes an existing cached photo.
+      if (rec.photoURL) data.photoURL = rec.photoURL;
+      await setDoc(doc(db, "attendees", id), data, { merge: true });
       ok++;
     } catch (err) { console.error("row failed:", rec.name, err); fail++; }
   }
