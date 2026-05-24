@@ -18,12 +18,9 @@ service cloud.firestore {
       // Anyone who has completed SMS OTP can read the directory.
       allow read: if request.auth != null;
 
-      // Self sign-up: a signed-in user may add ONLY their own verified number.
-      // Admins (bulk CSV/Excel upload) may add anyone.
-      allow create: if fieldsOk() && (
-        isAdmin() ||
-        (request.auth != null && request.resource.data.phone == request.auth.token.phone_number)
-      );
+      // Self sign-up (no OTP): any signed-in visitor (anonymous session) may add
+      // an entry with the expected fields. Admins also add via bulk import.
+      allow create: if request.auth != null && fieldsOk();
 
       // Only admins may edit existing entries (e.g. merge from an updated list).
       allow update: if isAdmin() && fieldsOk();
