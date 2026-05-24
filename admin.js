@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
-  getAuth, RecaptchaVerifier, signInWithPhoneNumber, signOut, onAuthStateChanged,
+  getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged,
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
   getFirestore, doc, setDoc, serverTimestamp,
@@ -8,15 +8,14 @@ import {
 import { firebaseConfig } from "./firebase-config.js";
 
 const $ = (id) => document.getElementById(id);
-const VIEWS = ["view-phone", "view-otp", "view-denied", "view-admin"];
+const VIEWS = ["view-signin", "view-denied", "view-admin"];
 const showView = (id) => VIEWS.forEach((v) => $(v).classList.toggle("hidden", v !== id));
 const setLoading = (on) => $("loading").classList.toggle("hidden", !on);
 
 const CONFIGURED =
   firebaseConfig && firebaseConfig.apiKey && !String(firebaseConfig.apiKey).includes("REPLACE");
 
-let auth, db, recaptcha = null, confirmationResult = null, booted = false;
-let parsedRecords = [];
+let auth, db, booted = false, parsedRecords = [];
 
 if (!CONFIGURED) {
   $("config-banner").classList.remove("hidden");
@@ -24,18 +23,13 @@ if (!CONFIGURED) {
   const app = initializeApp(firebaseConfig);
   auth = getAuth(app);
   db = getFirestore(app);
-  initRecaptcha();
   wireEvents();
   onAuthStateChanged(auth, onAuthChange);
 }
 
-function initRecaptcha() { recaptcha = new RecaptchaVerifier(auth, "recaptcha-container", { size: "invisible" }); }
-async function resetRecaptcha() { try { await recaptcha.clear(); } catch (_) {} initRecaptcha(); }
-
 function wireEvents() {
-  $("phone-form").addEventListener("submit", onSendOtp);
-  $("otp-form").addEventListener("submit", onVerifyOtp);
-  $("change-number").addEventListener("click", () => { confirmationResult = null; showView("view-phone"); });
+  $("signin-form").addEventListener("submit", onSignIn);
+  $("create-btn").addEventListener("click", onCreate);
   $("sign-out").addEventListener("click", doSignOut);
   $("denied-signout").addEventListener("click", doSignOut);
   $("file-input").addEventListener("change", onFile);
@@ -43,60 +37,42 @@ function wireEvents() {
 }
 
 async function onAuthChange(user) {
-  if (user && user.phoneNumber) {
-    $("session-phone").textContent = user.phoneNumber;
+  if (user) {
+    $("session-phone").textContent = user.email || "";
     $("session-info").classList.remove("hidden");
-    if (!booted && !confirmationResult) { booted = true; setLoading(true); try { await checkAdmin(user); } finally { setLoading(false); } }
+    if (!booted) { booted = true; setLoading(true); try { await checkAdmin(user); } finally { setLoading(false); } }
   } else {
     booted = true;
     $("session-info").classList.add("hidden");
-    showView("view-phone");
+    showView("view-signin");
   }
 }
 
-/* ---------- auth ---------- */
-
-function composePhone() {
-  const cc = $("country-code").value;
-  const ccDigits = cc.replace(/\D/g, "");
-  let national = $("phone-input").value.replace(/\D/g, "").replace(/^0+/, "");
-  if (national.length > 10 && national.startsWith(ccDigits)) national = national.slice(ccDigits.length);
-  return { e164: cc + national, ok: national.length >= 7 };
-}
-
-async function onSendOtp(e) {
+async function onSignIn(e) {
   e.preventDefault();
-  $("phone-error").textContent = "";
-  const { e164, ok } = composePhone();
-  if (!ok) { $("phone-error").textContent = "Enter a valid mobile number."; return; }
+  $("signin-error").textContent = "";
+  const email = $("admin-email").value.trim();
+  const pw = $("admin-password").value;
+  if (!email || pw.length < 6) { $("signin-error").textContent = "Enter your email and password (min 6 chars)."; return; }
   setLoading(true);
   try {
-    confirmationResult = await signInWithPhoneNumber(auth, e164, recaptcha);
-    $("otp-target").textContent = e164;
-    $("otp-input").value = "";
-    showView("view-otp");
-    $("otp-input").focus();
-  } catch (err) {
-    console.error(err);
-    $("phone-error").textContent = friendlyErr(err);
-    await resetRecaptcha();
-  } finally { setLoading(false); }
-}
-
-async function onVerifyOtp(e) {
-  e.preventDefault();
-  $("otp-error").textContent = "";
-  const code = $("otp-input").value.replace(/\D/g, "");
-  if (code.length < 6) { $("otp-error").textContent = "Enter the 6-digit code."; return; }
-  if (!confirmationResult) { showView("view-phone"); return; }
-  setLoading(true);
-  try {
-    const cred = await confirmationResult.confirm(code);
+    const cred = await signInWithEmailAndPassword(auth, email, pw);
     await checkAdmin(cred.user);
-  } catch (err) {
-    console.error(err);
-    $("otp-error").textContent = friendlyErr(err);
-  } finally { setLoading(false); }
+  } catch (err) { console.error(err); $("signin-error").textContent = friendlyErr(err); }
+  finally { setLoading(false); }
+}
+
+async function onCreate() {
+  $("signin-error").textContent = "";
+  const email = $("admin-email").value.trim();
+  const pw = $("admin-password").value;
+  if (!email || pw.length < 6) { $("signin-error").textContent = "Enter an email and a password (min 6 chars)."; return; }
+  setLoading(true);
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, email, pw);
+    await checkAdmin(cred.user);
+  } catch (err) { console.error(err); $("signin-error").textContent = friendlyErr(err); }
+  finally { setLoading(false); }
 }
 
 async function checkAdmin(user) {
@@ -104,18 +80,17 @@ async function checkAdmin(user) {
   if (r.claims && r.claims.admin === true) {
     showView("view-admin");
   } else {
-    $("denied-phone").textContent = user.phoneNumber || "";
+    $("denied-phone").textContent = user.email || "";
     showView("view-denied");
   }
 }
 
 async function doSignOut() {
-  confirmationResult = null;
   parsedRecords = [];
   try { await signOut(auth); } catch (_) {}
-  $("phone-input").value = ""; $("otp-input").value = "";
+  $("admin-password").value = "";
   $("file-input").value = "";
-  showView("view-phone");
+  showView("view-signin");
 }
 
 /* ---------- file parsing ---------- */
@@ -253,11 +228,12 @@ async function onUpload() {
 function friendlyErr(err) {
   const code = (err && err.code) || "";
   const map = {
-    "auth/invalid-phone-number": "That phone number looks invalid.",
+    "auth/invalid-credential": "Wrong email or password.",
+    "auth/invalid-email": "Enter a valid email.",
+    "auth/missing-password": "Enter your password.",
+    "auth/weak-password": "Password must be at least 6 characters.",
+    "auth/email-already-in-use": "That email already has an account — use Sign in.",
     "auth/too-many-requests": "Too many attempts. Please wait and retry.",
-    "auth/invalid-verification-code": "That code is incorrect.",
-    "auth/code-expired": "That code expired. Request a new one.",
-    "auth/operation-not-allowed": "Phone sign-in isn't enabled on the project.",
     "permission-denied": "Your account isn't authorized to upload.",
   };
   return map[code] || (err && err.message) || "Something went wrong.";
