@@ -222,6 +222,15 @@ input:disabled { background: #f6f1ea; color: var(--muted); }
 .qr-url { color: var(--muted); font-size: 13px; word-break: break-all; }
 .qr-page .stack { text-align: left; margin-top: 16px; }
 
+/* Admin preview table */
+.preview-table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 13px; }
+.preview-table th, .preview-table td {
+  text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line);
+  overflow-wrap: anywhere;
+}
+.preview-table th { color: var(--muted); font-weight: 600; text-transform: capitalize; }
+#file-input { margin: 6px 0 14px; font: inherit; }
+
 .hidden { display: none !important; }
 
 #recaptcha-container { position: fixed; bottom: 0; }

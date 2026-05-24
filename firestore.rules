@@ -1,20 +1,35 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    // Admins are marked with a custom auth claim { admin: true } (no phone
+    // numbers stored in this public file).
+    function isAdmin() {
+      return request.auth != null && request.auth.token.admin == true;
+    }
+
+    function fieldsOk() {
+      return request.resource.data.keys().hasOnly(
+        ['name','email','phone','company','title','linkedin','photoURL','source','createdAt']);
+    }
+
     match /attendees/{id} {
 
       // Anyone who has completed SMS OTP can read the directory.
       allow read: if request.auth != null;
 
-      // A signed-in user may add ONLY their own verified number, and only the
-      // expected fields (prevents inserting fake entries or spoofing others).
-      allow create: if request.auth != null
-        && request.resource.data.phone == request.auth.token.phone_number
-        && request.resource.data.keys().hasOnly(
-             ['name','email','phone','company','title','linkedin','photoURL','source','createdAt']);
+      // Self sign-up: a signed-in user may add ONLY their own verified number.
+      // Admins (bulk CSV/Excel upload) may add anyone.
+      allow create: if fieldsOk() && (
+        isAdmin() ||
+        (request.auth != null && request.resource.data.phone == request.auth.token.phone_number)
+      );
 
-      // Edits/removals are admin-only (Firebase console / Admin SDK).
-      allow update, delete: if false;
+      // Only admins may edit existing entries (e.g. merge from an updated list).
+      allow update: if isAdmin() && fieldsOk();
+
+      // No deletions from clients (merge-only).
+      allow delete: if false;
     }
   }
 }

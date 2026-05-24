@@ -71,6 +71,23 @@ Open [`qr.html`](qr.html) (locally or on the live site), confirm the URL, and cl
 
 ---
 
+## Updating the guest list (admin page)
+
+For the event you'll get an updated CSV/Excel. Merge it into the live directory via the
+**admin page** (`…/admin.html`, unlisted / `noindex`):
+
+1. Open `admin.html` and sign in with your phone (must be an **admin** account — see below).
+2. Choose the `.csv` or `.xlsx`. Columns are auto-detected (name, email, phone, company,
+   title, linkedin, photo). Rows are matched by phone and **merged** — existing people are
+   updated, new people added, **nobody is deleted** (self-registered sign-ups are kept).
+
+**Admin access = a Firebase custom claim** (`admin: true`) — deliberately *not* a phone list
+in this public repo. To grant it: the person signs in once (to create their Auth user), then
+set the claim on their UID via the Admin SDK or the Identity Toolkit API
+(`accounts:update` with `customAttributes={"admin":true}`). They reload `admin.html` and the
+claim is picked up automatically (the page force-refreshes the token). Firestore rules
+(`firestore.rules`) enforce that only `admin:true` tokens can write other people's entries.
+
 ## Local development
 ```bash
 python3 -m http.server 8000
@@ -94,6 +111,7 @@ Each card resolves its photo through: **`photoURL`** (scraped or user-supplied) 
 | `firebase-config.js` | Your Firebase web config (public by design) |
 | `firestore.rules` | Security rules (OTP-gated reads; self-only writes) |
 | `qr.html` | QR generator with PNG download |
+| `admin.html` / `admin.js` | Admin-only page to upload a CSV/Excel and merge it into the directory |
 | `seed/attendees.example.json` | Template showing the guest record shape (committed) |
 | `seed/attendees.json` | Real guest data — **git-ignored, local only**, seeded into Firestore |
 | `seed/seed.js` | One-time seeder + best-effort LinkedIn photo scrape |
