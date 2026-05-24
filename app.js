@@ -51,7 +51,9 @@ async function restoreSession() {
 function wireEvents() {
   $("phone-form").addEventListener("submit", onLookup);
   $("request-form").addEventListener("submit", onSubmitRequest);
-  $("search").addEventListener("input", renderCards);
+  $("search").addEventListener("input", onSearch);
+  const clear = $("search-clear");
+  if (clear) clear.addEventListener("click", clearSearch);
   const back = $("back-to-start");
   if (back) back.addEventListener("click", () => {
     try { localStorage.removeItem("gb_phone"); } catch (_) {}
@@ -151,12 +153,28 @@ function openDirectory() {
   );
 }
 
+function onSearch() {
+  $("search-clear").classList.toggle("hidden", !$("search").value);
+  renderCards();
+}
+
+function clearSearch() {
+  $("search").value = "";
+  $("search-clear").classList.add("hidden");
+  renderCards();
+  $("search").focus();
+}
+
 function renderCards() {
-  const term = ($("search").value || "").toLowerCase().trim();
-  const list = term
-    ? allAttendees.filter((p) =>
-        [p.name, p.company, p.title].filter(Boolean).join(" ").toLowerCase().includes(term))
-    : allAttendees;
+  const raw = ($("search").value || "").trim();
+  const term = raw.toLowerCase();
+  const dterm = raw.replace(/\D/g, "");
+  const list = !term ? allAttendees : allAttendees.filter((p) => {
+    const hay = [p.name, p.company, p.title, p.email, p.phone].filter(Boolean).join(" ").toLowerCase();
+    if (hay.includes(term)) return true;
+    if (dterm && (p.phone || "").replace(/\D/g, "").includes(dterm)) return true;
+    return false;
+  });
   $("count").textContent = `${list.length} ${list.length === 1 ? "person" : "people"}`;
   $("dir-empty").classList.toggle("hidden", list.length > 0);
   const wrap = $("cards");
@@ -270,6 +288,8 @@ function setAvatar(container, p) {
   if (p.photoURL) candidates.push(p.photoURL);
   const handle = linkedinHandle(p.linkedin);
   if (handle) candidates.push(`https://unavatar.io/linkedin/${encodeURIComponent(handle)}?fallback=false`);
+  if (p.email && /\S+@\S+\.\S+/.test(p.email)) candidates.push(`https://unavatar.io/${encodeURIComponent(p.email)}?fallback=false`);
+  if (!candidates.length) return;
   let i = 0;
   const tryNext = () => {
     if (i >= candidates.length) return; // keep initials
@@ -280,7 +300,16 @@ function setAvatar(container, p) {
     img.onerror = tryNext;
     img.src = url;
   };
-  tryNext();
+  // Lazy: only request when the card nears the viewport, so we don't fire all
+  // avatar requests at once (the service rate-limits bursts → 429 → no photo).
+  if ("IntersectionObserver" in window) {
+    const io = new IntersectionObserver((entries, obs) => {
+      if (entries.some((e) => e.isIntersecting)) { obs.disconnect(); tryNext(); }
+    }, { rootMargin: "300px" });
+    io.observe(container);
+  } else {
+    tryNext();
+  }
 }
 
 function initialsOf(name) {
