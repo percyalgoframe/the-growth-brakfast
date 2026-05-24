@@ -30,6 +30,22 @@ if (!CONFIGURED) {
   });
   signInAnonymously(auth).catch((e) => console.error("anon sign-in:", e));
   wireEvents();
+  restoreSession();
+}
+
+async function restoreSession() {
+  let saved = null;
+  try { saved = localStorage.getItem("gb_phone"); } catch (_) {}
+  if (!saved) return;
+  enteredPhone = saved;
+  setLoading(true);
+  try {
+    await authReady;
+    const snap = await getDocs(query(collection(db, "attendees"), where("phone", "==", saved)));
+    if (!snap.empty) openDirectory();
+    else { try { localStorage.removeItem("gb_phone"); } catch (_) {} }
+  } catch (err) { console.error(err); }
+  finally { setLoading(false); }
 }
 
 function wireEvents() {
@@ -37,7 +53,12 @@ function wireEvents() {
   $("request-form").addEventListener("submit", onSubmitRequest);
   $("search").addEventListener("input", renderCards);
   const back = $("back-to-start");
-  if (back) back.addEventListener("click", () => { showView("view-phone"); });
+  if (back) back.addEventListener("click", () => {
+    try { localStorage.removeItem("gb_phone"); } catch (_) {}
+    if (unsub) { unsub(); unsub = null; }
+    $("phone-input").value = "";
+    showView("view-phone");
+  });
 }
 
 function composePhone() {
@@ -59,6 +80,7 @@ async function onLookup(e) {
     await authReady;
     const snap = await getDocs(query(collection(db, "attendees"), where("phone", "==", e164)));
     if (!snap.empty) {
+      try { localStorage.setItem("gb_phone", e164); } catch (_) {}
       openDirectory();
     } else {
       $("r-phone").value = e164;
@@ -90,6 +112,7 @@ async function onSubmitRequest(e) {
       source: "signup",
       createdAt: serverTimestamp(),
     }, { merge: true });
+    try { localStorage.setItem("gb_phone", enteredPhone); } catch (_) {}
     openDirectory();
   } catch (err) {
     console.error(err);
@@ -162,17 +185,20 @@ function contactRow(icon, text, href) {
 }
 
 function setAvatar(container, p) {
+  // Show initials immediately so a card is never blank, then upgrade to a real
+  // photo only if one actually loads (external services may hang, not error).
+  container.textContent = initialsOf(p.name);
+  container.style.background = colorOf(p.name || p.email || "?");
   const candidates = [];
   if (p.photoURL) candidates.push(p.photoURL);
   const handle = linkedinHandle(p.linkedin);
   if (handle) candidates.push(`https://unavatar.io/linkedin/${encodeURIComponent(handle)}?fallback=false`);
-  const showInitials = () => { container.textContent = initialsOf(p.name); container.style.background = colorOf(p.name || p.email || "?"); };
   let i = 0;
   const tryNext = () => {
-    if (i >= candidates.length) { showInitials(); return; }
+    if (i >= candidates.length) return; // keep initials
     const url = candidates[i++];
     const img = new Image();
-    img.alt = p.name || ""; img.loading = "lazy"; img.referrerPolicy = "no-referrer";
+    img.alt = p.name || ""; img.referrerPolicy = "no-referrer";
     img.onload = () => { container.textContent = ""; container.style.background = ""; container.appendChild(img); };
     img.onerror = tryNext;
     img.src = url;
