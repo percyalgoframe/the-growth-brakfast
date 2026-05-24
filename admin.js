@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
-  getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged,
+  getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged,
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
   getFirestore, doc, setDoc, deleteDoc, serverTimestamp, collection, query, where, getDocs, onSnapshot, writeBatch,
@@ -33,7 +33,6 @@ if (!CONFIGURED) {
 
 function wireEvents() {
   $("signin-form").addEventListener("submit", onSignIn);
-  $("create-btn").addEventListener("click", onCreate);
   $("sign-out").addEventListener("click", doSignOut);
   $("denied-signout").addEventListener("click", doSignOut);
   $("file-input").addEventListener("change", onFile);
@@ -70,19 +69,6 @@ async function onSignIn(e) {
   setLoading(true);
   try {
     const cred = await signInWithEmailAndPassword(auth, email, pw);
-    await checkAdmin(cred.user);
-  } catch (err) { console.error(err); $("signin-error").textContent = friendlyErr(err); }
-  finally { setLoading(false); }
-}
-
-async function onCreate() {
-  $("signin-error").textContent = "";
-  const email = $("admin-email").value.trim();
-  const pw = $("admin-password").value;
-  if (!email || pw.length < 6) { $("signin-error").textContent = "Enter an email and a password (min 6 chars)."; return; }
-  setLoading(true);
-  try {
-    const cred = await createUserWithEmailAndPassword(auth, email, pw);
     await checkAdmin(cred.user);
   } catch (err) { console.error(err); $("signin-error").textContent = friendlyErr(err); }
   finally { setLoading(false); }

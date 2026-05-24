@@ -35,12 +35,11 @@
     <!-- Sign in (email + password) -->
     <section id="view-signin" class="view card-panel">
       <h2>Admin sign-in</h2>
-      <p class="muted">Sign in with your admin email. Only accounts granted admin access can upload. First time? Use <strong>Create admin account</strong>.</p>
+      <p class="muted">Sign in with your admin email. Only authorized admin accounts can manage the directory.</p>
       <form id="signin-form" class="stack" novalidate>
         <label>Email<input id="admin-email" type="email" autocomplete="email" required /></label>
         <label>Password<input id="admin-password" type="password" autocomplete="current-password" required minlength="6" /></label>
         <button id="signin-btn" type="submit" class="btn primary">Sign in</button>
-        <button id="create-btn" type="button" class="btn">Create admin account</button>
         <p id="signin-error" class="error" role="alert"></p>
       </form>
     </section>
@@ -120,6 +119,6 @@
     <div id="loading" class="loading hidden" aria-hidden="true"><span class="spinner"></span></div>
   </main>
 
-  <script type="module" src="admin.js?v=6"></script>
+  <script type="module" src="admin.js?v=7"></script>
 </body>
 </html>
