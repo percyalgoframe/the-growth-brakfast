@@ -37,7 +37,9 @@ function wireEvents() {
 }
 
 async function onAuthChange(user) {
-  if (user) {
+  // Ignore anonymous sessions (carried over from the attendee directory) — the
+  // admin page requires a real email/password sign-in.
+  if (user && !user.isAnonymous) {
     $("session-phone").textContent = user.email || "";
     $("session-info").classList.remove("hidden");
     if (!booted) { booted = true; setLoading(true); try { await checkAdmin(user); } finally { setLoading(false); } }

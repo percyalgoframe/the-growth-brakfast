@@ -120,9 +120,26 @@ async function onSubmitRequest(e) {
   } finally { setLoading(false); }
 }
 
+function renderSkeletons(n = 6) {
+  const wrap = $("cards");
+  wrap.textContent = "";
+  for (let i = 0; i < n; i++) {
+    const c = document.createElement("div");
+    c.className = "card skeleton";
+    const av = document.createElement("div"); av.className = "sk-av";
+    const body = document.createElement("div"); body.className = "sk-body";
+    for (const w of ["w60", "w40", "w80"]) {
+      const l = document.createElement("div"); l.className = "sk-line " + w; body.appendChild(l);
+    }
+    c.append(av, body);
+    wrap.appendChild(c);
+  }
+}
+
 function openDirectory() {
   showView("view-directory");
   if (unsub) return;
+  renderSkeletons();
   unsub = onSnapshot(
     collection(db, "attendees"),
     (snap) => {

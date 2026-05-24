@@ -2,18 +2,29 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>The Growth Breakfast — Attendees</title>
-  <meta name="description" content="The Growth Breakfast event attendee directory." />
+  <meta name="description" content="The Growth Breakfast — live attendee directory. Find who's in the room." />
+  <meta name="theme-color" content="#f7efe3" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Growth Breakfast" />
+  <meta property="og:title" content="The Growth Breakfast — Attendees" />
+  <meta property="og:description" content="Find who's in the room at The Growth Breakfast." />
+  <meta property="og:type" content="website" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='88'%3E%E2%98%95%3C/text%3E%3C/svg%3E" />
   <link rel="preconnect" href="https://www.gstatic.com" />
   <link rel="preconnect" href="https://unavatar.io" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <header class="app-header">
     <div class="brand">
       <span class="brand-mark" aria-hidden="true">&#9749;</span>
-      <div>
+      <div class="brand-text">
         <h1>The Growth Breakfast</h1>
         <p class="tagline">Attendee directory</p>
       </div>
@@ -26,55 +37,68 @@
     </div>
 
     <!-- View 1: phone lookup -->
-    <section id="view-phone" class="view card-panel">
-      <h2>Find your name</h2>
-      <p class="muted">Enter the mobile number you registered with to view the attendee directory.</p>
-      <form id="phone-form" class="stack" novalidate>
-        <div class="phone-row">
-          <select id="country-code" aria-label="Country code">
-            <option value="+91" selected>&#127470;&#127475; +91</option>
-            <option value="+1">&#127482;&#127480; +1</option>
-            <option value="+44">&#127468;&#127463; +44</option>
-            <option value="+971">&#127462;&#127466; +971</option>
-            <option value="+61">&#127462;&#127482; +61</option>
-            <option value="+65">&#127480;&#127468; +65</option>
-          </select>
-          <input id="phone-input" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="98765 43210" required />
+    <section id="view-phone" class="view auth-screen">
+      <div class="auth-card">
+        <div class="auth-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9.5" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         </div>
-        <button id="send-otp-btn" type="submit" class="btn primary">Continue</button>
-        <p id="phone-error" class="error" role="alert"></p>
-      </form>
+        <h2>Find your name</h2>
+        <p class="muted">Enter the mobile number you registered with to view who&rsquo;s in the room.</p>
+        <form id="phone-form" class="stack" novalidate>
+          <div class="phone-row">
+            <select id="country-code" aria-label="Country code">
+              <option value="+91" selected>&#127470;&#127475; +91</option>
+              <option value="+1">&#127482;&#127480; +1</option>
+              <option value="+44">&#127468;&#127463; +44</option>
+              <option value="+971">&#127462;&#127466; +971</option>
+              <option value="+61">&#127462;&#127482; +61</option>
+              <option value="+65">&#127480;&#127468; +65</option>
+            </select>
+            <input id="phone-input" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="98765 43210" required />
+          </div>
+          <button id="send-otp-btn" type="submit" class="btn primary btn-lg">Continue</button>
+          <p id="phone-error" class="error" role="alert"></p>
+        </form>
+        <p class="fineprint">Private to registered guests of the event.</p>
+      </div>
     </section>
 
-    <!-- View 3: directory -->
+    <!-- View 2: directory -->
     <section id="view-directory" class="view hidden">
       <div class="dir-head">
-        <h2>Who&rsquo;s here</h2>
-        <div class="dir-tools">
-          <input id="search" type="search" placeholder="Search name, company, title&hellip;" aria-label="Search attendees" />
+        <div class="dir-title">
+          <h2>Who&rsquo;s here</h2>
           <span id="count" class="count-pill"></span>
+        </div>
+        <div class="dir-tools">
+          <div class="search-wrap">
+            <svg class="search-ico" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <input id="search" type="search" placeholder="Search name, company, title&hellip;" aria-label="Search attendees" />
+          </div>
           <button id="back-to-start" class="link-btn" type="button">Switch number</button>
         </div>
       </div>
       <div id="cards" class="cards"></div>
-      <p id="dir-empty" class="muted hidden">No attendees yet.</p>
+      <p id="dir-empty" class="empty-state hidden">No attendees yet.</p>
     </section>
 
-    <!-- View 4: request to be added -->
-    <section id="view-request" class="view card-panel hidden">
-      <h2>You&rsquo;re not on the list yet</h2>
-      <p class="muted">Your number is verified. Add your details to join the directory &mdash; you&rsquo;ll appear instantly for everyone.</p>
-      <form id="request-form" class="stack" novalidate>
-        <label>Full name<input id="r-name" type="text" autocomplete="name" required /></label>
-        <label>Email<input id="r-email" type="email" autocomplete="email" required /></label>
-        <label>Company<input id="r-company" type="text" autocomplete="organization" /></label>
-        <label>Job title<input id="r-title" type="text" autocomplete="organization-title" /></label>
-        <label>LinkedIn URL<input id="r-linkedin" type="url" placeholder="https://linkedin.com/in/yourhandle" /></label>
-        <label>Photo URL <span class="hint">(optional)</span><input id="r-photo" type="url" placeholder="https://&hellip;/photo.jpg" /></label>
-        <label class="locked">Mobile<input id="r-phone" type="tel" disabled /></label>
-        <button id="submit-request" type="submit" class="btn primary">Join the directory</button>
-        <p id="request-error" class="error" role="alert"></p>
-      </form>
+    <!-- View 3: request to be added -->
+    <section id="view-request" class="view auth-screen hidden">
+      <div class="auth-card">
+        <h2>You&rsquo;re not on the list yet</h2>
+        <p class="muted">Add your details to join the directory &mdash; you&rsquo;ll appear instantly for everyone.</p>
+        <form id="request-form" class="stack" novalidate>
+          <label>Full name<input id="r-name" type="text" autocomplete="name" required /></label>
+          <label>Email<input id="r-email" type="email" autocomplete="email" required /></label>
+          <label>Company<input id="r-company" type="text" autocomplete="organization" /></label>
+          <label>Job title<input id="r-title" type="text" autocomplete="organization-title" /></label>
+          <label>LinkedIn URL <span class="hint">(optional)</span><input id="r-linkedin" type="url" placeholder="https://linkedin.com/in/yourhandle" /></label>
+          <label>Photo URL <span class="hint">(optional)</span><input id="r-photo" type="url" placeholder="https://&hellip;/photo.jpg" /></label>
+          <label class="locked">Mobile<input id="r-phone" type="tel" disabled /></label>
+          <button id="submit-request" type="submit" class="btn primary btn-lg">Join the directory</button>
+          <p id="request-error" class="error" role="alert"></p>
+        </form>
+      </div>
     </section>
 
     <div id="loading" class="loading hidden" aria-hidden="true"><span class="spinner"></span></div>
@@ -84,6 +108,6 @@
     <a href="qr.html">Event QR code</a>
   </footer>
 
-  <script type="module" src="app.js"></script>
+  <script type="module" src="app.js?v=2"></script>
 </body>
 </html>
