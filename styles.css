@@ -250,6 +250,36 @@ select { -webkit-appearance: none; appearance: none; }
 
 .card-panel a, .auth-card a, .qr-page a { color: var(--gold-deep); text-underline-offset: 2px; }
 
+/* admin: People management */
+.people-head { display: flex; gap: 12px; align-items: center; }
+.people-head .search-wrap { flex: 1 1 auto; }
+.people-list { display: flex; flex-direction: column; }
+.person-row { display: flex; align-items: center; gap: 12px; padding: 12px 2px; border-top: 1px solid var(--rule); }
+.person-row:last-child { border-bottom: 1px solid var(--rule); }
+.person-av { width: 40px; height: 40px; border-radius: 50%; flex: 0 0 auto; display: grid; place-items: center; background: #c9b79f; color: #fffdf8; font-family: var(--serif); font-weight: 600; font-size: 15px; overflow: hidden; }
+.person-av img { width: 100%; height: 100%; object-fit: cover; }
+.person-meta { flex: 1 1 auto; min-width: 0; }
+.person-name { font-weight: 600; font-size: 14.5px; overflow-wrap: anywhere; }
+.person-sub { color: var(--muted); font-size: 12.5px; overflow-wrap: anywhere; }
+.person-acts { display: flex; gap: 6px; flex: 0 0 auto; }
+.act-danger { color: var(--danger); }
+
+/* admin: Import diff */
+.diff-sec { border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 10px 12px; margin: 10px 0; }
+.diff-sec-head { font-weight: 700; font-size: 13px; }
+.diff-names { color: var(--ink-soft); font-size: 12.5px; margin-top: 5px; overflow-wrap: anywhere; }
+.diff-add { background: #eef7f1; border-color: #cbe5cf; } .diff-add .diff-sec-head { color: #1f6b48; }
+.diff-update { background: var(--gold-soft); border-color: #ecd9a8; } .diff-update .diff-sec-head { color: var(--gold-deep); }
+.diff-remove { background: #fbeee8; border-color: #f0cdbb; } .diff-remove .diff-sec-head { color: var(--danger); }
+.diff-kept { background: var(--paper-2); } .diff-kept .diff-sec-head { color: var(--ink-soft); }
+.diff-remove-toggle { display: flex; align-items: center; gap: 8px; margin-top: 14px; font-size: 13px; font-weight: 600; color: var(--danger); cursor: pointer; }
+.diff-remove-toggle input { width: auto; }
+
+/* admin: add/edit modal */
+.modal { position: fixed; inset: 0; z-index: 80; background: rgba(42,34,24,0.45); display: grid; place-items: center; padding: 20px; }
+.modal-card { background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius); box-shadow: var(--sh-soft); padding: 26px 24px; width: 100%; max-width: 440px; max-height: 90vh; overflow: auto; }
+.modal-card h3 { margin: 0 0 16px; font-size: 22px; font-weight: 600; }
+
 .hidden { display: none !important; }
 
 @media (max-width: 540px) {

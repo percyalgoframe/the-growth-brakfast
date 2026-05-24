@@ -25,8 +25,8 @@ service cloud.firestore {
       // Only admins may edit existing entries (e.g. merge from an updated list).
       allow update: if isAdmin() && fieldsOk();
 
-      // No deletions from clients (merge-only).
-      allow delete: if false;
+      // Admins can remove entries (upload diff + manual management).
+      allow delete: if isAdmin();
     }
 
     match /checkins/{id} {
