@@ -268,22 +268,24 @@ select { -webkit-appearance: none; appearance: none; background-image: none; }
 .card-body { min-width: 0; flex: 1 1 auto; }
 .card-body h3 { margin: 0 0 3px; font-size: 16.5px; font-weight: 700; letter-spacing: -0.02em; overflow-wrap: anywhere; }
 .role { margin: 0 0 12px; color: var(--muted); font-size: 13px; font-weight: 500; overflow-wrap: anywhere; }
-.contacts { display: flex; flex-direction: column; gap: 7px; }
-.contact {
-  display: inline-flex; align-items: center; gap: 9px;
-  color: var(--ink-soft); text-decoration: none; font-size: 13px; font-weight: 500;
-  overflow-wrap: anywhere; width: fit-content; max-width: 100%;
+.card-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 2px; }
+.act {
+  display: inline-flex; align-items: center; gap: 6px;
+  font: inherit; font-size: 12.5px; font-weight: 600; line-height: 1;
+  padding: 8px 11px; border-radius: 10px;
+  border: 1px solid var(--line-strong); background: #fff; color: var(--ink-soft);
+  cursor: pointer; text-decoration: none; white-space: nowrap;
+  transition: background .14s ease, border-color .14s ease, color .14s ease, transform .06s ease, box-shadow .14s ease;
 }
-.contact:hover { color: var(--accent-2); }
-.contact .ci {
-  flex: 0 0 auto;
-  width: 24px; height: 24px;
-  display: grid; place-items: center;
-  border-radius: 7px; background: #f4ede3;
-  font-size: 12px; font-weight: 800; color: var(--muted);
-}
-.contact.li .ci { background: #e7f0fb; color: var(--blue); }
-.contact.li { color: var(--blue); font-weight: 600; }
+.act:hover { transform: translateY(-1px); box-shadow: var(--sh-sm); }
+.act:active { transform: translateY(0); }
+.act svg { flex: 0 0 auto; }
+.act-save { background: var(--accent-soft); border-color: #f1d8bf; color: var(--accent-2); }
+.act-save:hover { background: #fbe6d2; }
+.act-wa { background: #e8f7ee; border-color: #c2e9d0; color: #1f8a4c; }
+.act-wa:hover { background: #d9f1e3; }
+.act-li { background: #e9f1fb; border-color: #c9def6; color: var(--blue); }
+.act-li:hover { background: #dcebfb; }
 
 .empty-state { text-align: center; color: var(--muted); padding: 48px 0; font-size: 15px; }
 
